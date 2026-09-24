@@ -1,0 +1,59 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Secrets
+.env
+.env.*
+*.keystore
+*.jks
+*.pem
+*.p12
+
+# Node / React Native / Expo
+node_modules/
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml
+.expo/
+.expo-shared/
+dist/
+build/
+web-build/
+
+# Android / Gradle
+*.apk
+*.aab
+*.dex
+local.properties
+.gradle/
+android/app/build/
+android/build/
+android/captures/
+
+# iOS (si se agrega luego)
+ios/Pods/
+ios/build/
+*.xcworkspace/
+
+# Flutter (si se elige)
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+coverage/
+*.tmp
+*.swp

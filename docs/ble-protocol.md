@@ -1,53 +1,41 @@
 # Contrato BLE - FitBack
 
-Spec del servicio BLE que expone el ESP32. Documento de referencia para
-firmware y app. Estado: **propuesto** (pendiente de implementar en NimBLE).
+Spec del servicio BLE que expone el ESP32. Estado: **implementado en
+`firmware/sensor/sensor.ino`** (stack BLEDevice/Bluedroid de Arduino),
+con pendientes listados abajo.
 
-## Identidad del dispositivo
+## Implementado (vigente)
 
-- Nombre de advertising: `FITBACK-XXXX` donde `XXXX` = ultimos 4 hex del MAC.
-- Max 1 conexion central simultanea ("nueva conexion gana": si llega un
-  segundo central, el ESP32 desconecta al anterior).
+- Stack: `BLEDevice` (Bluedroid) de arduino-esp32.
+- Nombre de advertising: `GYM-MOTION`.
+- Service UUID: `6E400001-B5A3-F393-E0A9-E50E24DCCA9E`
+  (servicio UART estilo Nordic).
+- TX `6E400003-...CA9E` — notify + read.
+- RX `6E400002-...CA9E` — write + write_no_response.
+- Formato `DISTANCE` (TX): texto CSV `"tiempo_s,distancia_cm"`
+  (ej. `"12.345,23.45"`), notificado cada ~50 ms en modo normal.
+- Al desconectarse un central, el advertising se reanuda
+  automaticamente.
+- Extras del firmware: filtro de mediana (5 lecturas), rango valido
+  2-400 cm, modo ahorro (5 s) tras 1 min sin movimiento, monitoreo de
+  bateria por ADC (GPIO 34) con LEDs rojo/verde (GPIO 25/26).
 
-## Servicio
+## Pendientes para la siguiente iteracion
 
-| Campo | Valor |
-|-------|-------|
-| Service UUID | `6e400001-b5a3-f393-e0a9-e50e24dcca9e` *(propuesto, Nordic UART-like)* |
+| Cambio | Motivo |
+|--------|--------|
+| Nombre `FITBACK-XXXX` (ultimos 4 del MAC) | Dos maquinas vecinas no se confunden al escanear |
+| `MACHINE_ID` (read, string <= 20 bytes) | Mapear QR -> perfil de maquina |
+| Limitar a 1 conexion central | Regla "nueva conexion gana" |
+| `COMMAND` (write, 1 byte opcode) | Reset/calibracion remota (opcional MVP) |
 
-## Characteristics
+## Opcodes de COMMAND (propuesto)
 
-| Nombre | UUID | Props | Formato |
-|--------|------|-------|---------|
-| `DISTANCE` | `6e400002-...ca9e` | notify | uint16 LE, distancia en mm |
-| `MACHINE_ID` | `6e400003-...ca9e` | read | string UTF-8, ej. `"GYM01-LEGPRESS"` |
-| `COMMAND` | `6e400004-...ca9e` | write | 1 byte opcode (ver abajo) |
-
-*(Los UUIDs concretos se fijan al implementar; completar la tabla y
-avisar al equipo antes de cambiarlos.)*
-
-## Formato de datos
-
-- `DISTANCE`: uint16 little-endian. Unidad: **mm** para resolucion fina
-  (equivale a cm × 10; el firmware mide en cm y multiplica por 10).
-  Frecuencia objetivo: notificacion cada ~50 ms (20 Hz).
-  Valor `0xFFFF` = medicion invalida (timeout de `pulseIn`).
-- `MACHINE_ID`: texto, max 20 bytes. Se define al instalar cada maquina
-  y se flashea o se guarda en NVS (Preferences).
-- `COMMAND` opcodes:
-  - `0x01` = reset de estadisticas internas
-  - `0x02` = entrar en modo calibracion (futuro)
-  - `0x03` = reiniciar dispositivo
-
-## Comportamiento
-
-- El ESP32 notifica `DISTANCE` solo a centrales suscritos.
-- Mientras no haya conexion, el nombre `FITBACK-XXXX` sigue en
-  advertising para que la app lo descubra.
-- Al desconectarse el central, el ESP32 vuelve a hacer advertising de
-  inmediato.
+- `0x01` reset de estadisticas internas
+- `0x02` modo calibracion
+- `0x03` reiniciar dispositivo
 
 ## Debug por USB
 
-El firmware mantiene la salida Serial a 115200 baud con el formato CSV
-actual `tiempo,distancia_cm` para depurar con Monitor Serie.
+Salida Serial a 115200 baud en CSV `tiempo,distancia_cm` mas mensajes
+de estado (bateria, modo ahorro, eventos BLE).

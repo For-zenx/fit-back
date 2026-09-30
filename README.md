@@ -75,6 +75,65 @@ fitback/
 - **Cualquier maquina**: no solo peso apilado — cualquier parte movil que
   el ultrasonico pueda rastrear.
 
+## Como correr la app
+
+### Prerequisitos (una sola vez por maquina)
+
+1. Instalar **Flutter SDK**: descargar el zip de
+   https://docs.flutter.dev/get-started/install/windows y extraerlo
+   (ej. `C:\flutter`). Agregar `C:\flutter\bin` al PATH del usuario.
+2. Instalar **Android Studio** (trae el Android SDK y Java embebido).
+3. Para correr en escritorio: **Visual Studio Build Tools** con
+   "Desktop development with C++".
+4. Verificar el entorno:
+
+```powershell
+flutter doctor   # todo debe salir en verde
+```
+
+### Correr en Windows (lo mas rapido para desarrollo)
+
+```powershell
+cd app
+flutter run -d windows
+```
+
+Con el proceso corriendo: `r` = hot reload, `q` = salir.
+
+### Correr en Chrome
+
+```powershell
+flutter run -d chrome
+```
+
+### Correr en emulador Android
+
+```powershell
+# una vez: instalar imagen del sistema y crear el AVD
+sdkmanager "system-images;android-36;google_apis;x86_64"
+flutter emulators --create --name pixel_test
+
+# cada vez
+flutter emulators --launch pixel_test
+flutter run -d emulator-5554
+```
+
+### Correr en telefono fisico (necesario para BLE)
+
+El emulador no tiene Bluetooth. Para probar contra el ESP32 real:
+
+1. En el telefono: activar *Opciones de desarrollador* (7 toques en
+   "Numero de compilacion") y *Depuracion USB*.
+2. Conectar por USB, aceptar el prompt en el telefono.
+3. `flutter devices` debe listarlo; luego `flutter run -d <id>`.
+
+### Tests y analisis
+
+```powershell
+flutter test      # tests unitarios
+flutter analyze   # lint/errores
+```
+
 ## Estado
 
 En fase de prototipado. El hardware funciona y envia datos; el siguiente

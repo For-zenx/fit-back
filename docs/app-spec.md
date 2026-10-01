@@ -49,7 +49,7 @@ Layout (tema oscuro, elementos grandes, legible a 2 metros):
   se muestra el texto "Haz una repeticion para calibrar" y la pelota,
   sin senal cruda. El tempo inicial es fijo; el carril se pausa tras
   3 s sin movimiento y se reanuda al detectar movimiento. La pelota
-  permanece blanca; el contador confirma visualmente las reps fisicas
+  permanece blanca; el contador muestra las reps fisicas sin animacion,
   aunque no coincidan con el tempo objetivo. Evaluar las reps fuera de
   tempo por separado queda pendiente.
 - Abajo: grafica de distancia (vista tecnica, colapsable) y botones:

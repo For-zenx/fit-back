@@ -238,24 +238,12 @@ class _SessionScreenState extends State<SessionScreen>
                   const Spacer(),
                   Column(
                     children: [
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 240),
-                        transitionBuilder: (child, animation) =>
-                            ScaleTransition(
-                              scale: Tween<double>(
-                                begin: 0.85,
-                                end: 1,
-                              ).animate(animation),
-                              child: child,
-                            ),
-                        child: Text(
-                          '$_reps',
-                          key: ValueKey(_reps),
-                          style: const TextStyle(
-                            fontSize: 110,
-                            fontWeight: FontWeight.bold,
-                            height: 0.9,
-                          ),
+                      Text(
+                        '$_reps',
+                        style: const TextStyle(
+                          fontSize: 110,
+                          fontWeight: FontWeight.bold,
+                          height: 0.9,
                         ),
                       ),
                       const Text(

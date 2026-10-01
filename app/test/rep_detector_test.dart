@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:fitback/core/distance_source.dart';
+import 'package:fitback/core/guide_track.dart';
 import 'package:fitback/core/rep_detector.dart';
 import 'package:fitback/core/simulated_distance_source.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,8 +32,10 @@ List<DistanceSample> sineSamples({
   return samples;
 }
 
-RepDetector fedDetector(List<DistanceSample> samples,
-    {double hysteresisRatio = 0.15}) {
+RepDetector fedDetector(
+  List<DistanceSample> samples, {
+  double hysteresisRatio = 0.15,
+}) {
   final detector = RepDetector(hysteresisRatio: hysteresisRatio);
   for (final s in samples) {
     detector.addSample(s);
@@ -55,8 +58,7 @@ void main() {
     });
 
     test('flat signal counts zero reps', () {
-      final flat = List.generate(
-          400, (i) => DistanceSample(i / 20.0, 30.0));
+      final flat = List.generate(400, (i) => DistanceSample(i / 20.0, 30.0));
       final d = fedDetector(flat);
       expect(d.repCount, 0);
     });
@@ -64,7 +66,11 @@ void main() {
     test('small bounce under threshold counts zero reps', () {
       // +/-0.3 cm oscillation — sensor noise, not a rep.
       final tiny = sineSamples(
-          repCount: 20, minCm: 30, maxCm: 30.6, periodSeconds: 0.4);
+        repCount: 20,
+        minCm: 30,
+        maxCm: 30.6,
+        periodSeconds: 0.4,
+      );
       final d = fedDetector(tiny);
       expect(d.repCount, 0);
     });
@@ -90,6 +96,28 @@ void main() {
       d.reset();
       expect(d.repCount, 0);
       expect(d.minCm.isFinite, isFalse);
+    });
+  });
+
+  group('GuideTrack', () {
+    test('uses a fixed tempo and shows one and a half cycles', () {
+      final guide = GuideTrack.fromCalibration(minCm: 30, maxCm: 50);
+      expect(guide.cycleSeconds, 3);
+      expect(guide.visibleSeconds, 4.5);
+      expect(guide.targetCm(0), 30);
+      expect(guide.targetCm(1.5), 50);
+      expect(guide.targetCm(3), 30);
+    });
+
+    test('slows the chosen phase without changing calibrated range', () {
+      final eccentric = GuideTrack.fromCalibration(
+        minCm: 30,
+        maxCm: 50,
+        mode: WorkoutMode.eccentric,
+      );
+      expect(eccentric.downSeconds, greaterThan(eccentric.upSeconds));
+      expect(eccentric.minCm, 30);
+      expect(eccentric.maxCm, 50);
     });
   });
 

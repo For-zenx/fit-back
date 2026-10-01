@@ -91,10 +91,10 @@ La app NO habla con el VPS durante el ejercicio — solo con el ESP32 por BLE.
 
 Cada maquina tiene un perfil `{tipo, rango_min, rango_max, orientacion}`.
 
-- **Primera sesion**: el usuario hace 2-3 reps de calibracion y la app
-  aprende el rango observado.
-- **Refinamiento continuo**: cada sesion actualiza el perfil con
-  percentiles (p5/p95 del rango observado). Converge solo tras ~10 sesiones.
+- **Primera sesion**: una rep de preparacion fija el rango observado,
+  sin sumarse al contador. La guia arranca con un tempo predeterminado.
+- **Refinamiento continuo (futuro)**: agregar percentiles p5/p95 del
+  rango observado entre sesiones, sin alterar bruscamente el carril actual.
 - **Agregado en VPS**: se suben solo min/max/count por maquina (no la
   sesion cruda), construyendo un catalogo de perfiles que mejora con el
   tiempo. Ventaja competitiva: un competidor no puede copiarlo sin

@@ -4,6 +4,15 @@ import 'dart:math';
 
 import 'distance_source.dart';
 
+/// A confirmed extremum (peak or valley) of the motion signal.
+class ExtremumEvent {
+  final double timeSeconds;
+  final double distanceCm;
+  final bool isPeak;
+
+  const ExtremumEvent(this.timeSeconds, this.distanceCm, this.isPeak);
+}
+
 /// Which half of the rep we are in, measured between extreme points.
 enum RepPhase { concentric, eccentric, idle }
 
@@ -24,6 +33,7 @@ class RepEvent {
 
 /// Snapshot of the detector state, emitted on every filtered sample.
 class DetectorFrame {
+  final double timeSeconds;
   final double smoothedCm;
   final double minCm;
   final double maxCm;
@@ -32,6 +42,7 @@ class DetectorFrame {
   final bool calibrated;
 
   const DetectorFrame({
+    required this.timeSeconds,
     required this.smoothedCm,
     required this.minCm,
     required this.maxCm,
@@ -64,6 +75,7 @@ class RepDetector {
   final _window = Queue<double>();
   final _frames = StreamController<DetectorFrame>.broadcast();
   final _reps = StreamController<RepEvent>.broadcast();
+  final _extrema = StreamController<ExtremumEvent>.broadcast();
 
   double _minCm = double.infinity;
   double _maxCm = double.negativeInfinity;
@@ -80,6 +92,7 @@ class RepDetector {
 
   Stream<DetectorFrame> get frames => _frames.stream;
   Stream<RepEvent> get reps => _reps.stream;
+  Stream<ExtremumEvent> get extrema => _extrema.stream;
   int get repCount => _repCount;
   double get minCm => _minCm;
   double get maxCm => _maxCm;
@@ -110,6 +123,7 @@ class RepDetector {
     _detect(sample.timeSeconds, smoothed);
 
     _frames.add(DetectorFrame(
+      timeSeconds: sample.timeSeconds,
       smoothedCm: smoothed,
       minCm: _minCm.isFinite ? _minCm : smoothed,
       maxCm: _maxCm.isFinite ? _maxCm : smoothed,
@@ -187,6 +201,8 @@ class RepDetector {
     required double t,
     required double nowT,
   }) {
+    _extrema.add(ExtremumEvent(t, _lastExtremumCm!, isPeak));
+
     final duration =
         Duration(milliseconds: ((nowT - _phaseStartT) * 1000).round());
     _phaseStartT = nowT;
@@ -240,5 +256,6 @@ class RepDetector {
   void dispose() {
     _frames.close();
     _reps.close();
+    _extrema.close();
   }
 }

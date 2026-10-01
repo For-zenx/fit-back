@@ -42,15 +42,25 @@ Layout (tema oscuro, elementos grandes, legible a 2 metros):
 - Arriba: X (salir), **timer** del set.
 - Fila de datos: **set actual** | **REPS** (numero gigante) | **kg**
   (peso ingresado manual, editable entre sets).
-- Centro: **onda de movimiento en vivo** — la distancia dibujada como
-  curva con punto brillante en la posicion actual; puntos marcados en
-  cada pico/valle detectado (referencia Virtuagym).
+- Centro: **carril objetivo** de ~1,5 ciclos visibles (referencia
+  Virtuagym). La pelota permanece al 28 % del ancho y sigue en vertical
+  la distancia medida; el carril avanza bajo ella y marca solo el
+  proximo extremo. La primera repeticion calibra min/max sin contarse:
+  se muestra el texto "Haz una repeticion para calibrar" y la pelota,
+  sin senal cruda. El tempo inicial es fijo; el carril se pausa tras
+  3 s sin movimiento y se reanuda al detectar movimiento. La pelota
+  permanece blanca; el contador confirma visualmente las reps fisicas
+  aunque no coincidan con el tempo objetivo. Evaluar las reps fuera de
+  tempo por separado queda pendiente.
 - Abajo: grafica de distancia (vista tecnica, colapsable) y botones:
   "Terminar set" / "Pausa".
 - Modalidad (elegida antes de iniciar): **Normal / Excentrico /
   Concentrico**. En modos con tempo objetivo, la onda muestra la fase
   actual y la app indica "mas lento" / "mas rapido" por color o texto.
-- Entre sets: temporizador de descanso con boton "Siguiente set".
+- Entre sets: al pulsar "Terminar set" se congelan pelota, contador,
+  carril y reloj del set; las nuevas mediciones no se procesan durante
+  el descanso. "Siguiente set" reinicia el conteo y el reloj sin repetir
+  la calibracion inicial.
 
 ### 5. Resumen de sesion
 
@@ -85,8 +95,9 @@ Layout (tema oscuro, elementos grandes, legible a 2 metros):
 4. Fases: subida de distancia = fase A, bajada = fase B; mapeo a
    concentrica/excentrica segun el tipo de maquina. En modos tempo, se
    mide duracion de cada fase contra objetivo (ej. 3-1-0).
-5. Auto-calibracion: primeras 2-3 reps fijan rango_min/max; cada sesion
-   refina con p5/p95 de lo observado. El perfil viaja con el machine_id.
+5. Auto-calibracion: la primera rep de preparacion fija rango_min/max
+   y no suma al contador; el tempo objetivo inicial es fijo. Refinar con
+   p5/p95 entre sesiones queda pendiente. El perfil viaja con machine_id.
 
 ## Datos locales (drift/SQLite)
 

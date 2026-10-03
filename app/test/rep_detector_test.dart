@@ -115,9 +115,20 @@ void main() {
         maxCm: 50,
         mode: WorkoutMode.eccentric,
       );
-      expect(eccentric.downSeconds, greaterThan(eccentric.upSeconds));
-      expect(eccentric.minCm, 30);
-      expect(eccentric.maxCm, 50);
+      final concentric = GuideTrack.fromCalibration(
+        minCm: 30,
+        maxCm: 50,
+        mode: WorkoutMode.concentric,
+      );
+      expect(eccentric.upSeconds, 1);
+      expect(eccentric.downSeconds, 3);
+      expect(concentric.upSeconds, 3);
+      expect(concentric.downSeconds, 1);
+      for (final guide in [eccentric, concentric]) {
+        expect(guide.minCm, 30);
+        expect(guide.maxCm, 50);
+        expect(guide.visibleSeconds, 6);
+      }
     });
   });
 

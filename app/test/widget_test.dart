@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:fitback/core/distance_source.dart';
+import 'package:fitback/core/guide_track.dart';
 import 'package:fitback/main.dart';
 import 'package:fitback/ui/motion_wave.dart';
 import 'package:fitback/ui/session_screen.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 class TestDistanceSource implements DistanceSource {
   final _controller = StreamController<DistanceSample>.broadcast(sync: true);
+  bool disconnected = false;
 
   @override
   Stream<DistanceSample> get stream => _controller.stream;
@@ -22,17 +24,111 @@ class TestDistanceSource implements DistanceSource {
   Future<void> connect() async {}
 
   @override
-  Future<void> disconnect() async {}
+  Future<void> disconnect() async {
+    disconnected = true;
+  }
 
   Future<void> close() => _controller.close();
 }
 
 void main() {
-  testWidgets('app builds the session screen', (tester) async {
+  testWidgets('app opens with mode selection and starts balanced', (
+    tester,
+  ) async {
     await tester.pumpWidget(const FitBackApp());
-    expect(find.text('REPS'), findsOneWidget);
-    expect(find.text('SET'), findsOneWidget);
-    expect(find.text('Terminar set'), findsOneWidget);
+    expect(find.text('Equilibrado'), findsOneWidget);
+    expect(find.text('Excéntrico'), findsOneWidget);
+    expect(find.text('Concéntrico'), findsOneWidget);
+    expect(find.byType(SessionScreen), findsNothing);
+    await tester.tap(find.text('Comenzar'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<SessionScreen>(find.byType(SessionScreen)).mode,
+      WorkoutMode.normal,
+    );
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+    expect(find.text('Equilibrado'), findsOneWidget);
+    expect(find.byType(SessionScreen), findsNothing);
+  });
+
+  testWidgets('selected mode is passed to the session', (tester) async {
+    await tester.pumpWidget(const FitBackApp());
+    await tester.tap(find.text('Excéntrico'));
+    await tester.tap(find.text('Comenzar'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<SessionScreen>(find.byType(SessionScreen)).mode,
+      WorkoutMode.eccentric,
+    );
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Concéntrico'));
+    await tester.tap(find.text('Comenzar'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<SessionScreen>(find.byType(SessionScreen)).mode,
+      WorkoutMode.concentric,
+    );
+  });
+
+  testWidgets('calibration applies the chosen mode across sets', (
+    tester,
+  ) async {
+    final source = TestDistanceSource();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SessionScreen(source: source, mode: WorkoutMode.eccentric),
+      ),
+    );
+    for (var i = 0; i < 50; i++) {
+      final t = i / 20.0;
+      source.emit(t, 30 + 10 * (1 - cos(2 * pi * t / 2)));
+    }
+    await tester.pump();
+    final guide = tester.widget<MotionWave>(find.byType(MotionWave)).guide!;
+    expect(guide.upSeconds, 1);
+    expect(guide.downSeconds, 3);
+    await tester.tap(find.text('Terminar set'));
+    await tester.pump();
+    await tester.tap(find.text('Siguiente set'));
+    await tester.pump();
+    expect(
+      tester.widget<MotionWave>(find.byType(MotionWave)).guide,
+      same(guide),
+    );
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
+    expect(source.disconnected, isTrue);
+    await source.close();
+  });
+
+  testWidgets('leaving a session disconnects its source', (tester) async {
+    final source = TestDistanceSource();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => SessionScreen(source: source),
+                ),
+              ),
+              child: const Text('Abrir sesión'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Abrir sesión'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+    expect(source.disconnected, isTrue);
+    expect(find.text('Abrir sesión'), findsOneWidget);
+    await source.close();
   });
 
   testWidgets('first rep calibrates without counting, then counts', (
@@ -100,6 +196,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(const FitBackApp());
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('Comenzar'));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 

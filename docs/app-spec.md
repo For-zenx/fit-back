@@ -35,9 +35,14 @@ anillo de score y lista por set.
   silenciosa en background.
 - Estados visibles: buscando / conectando / listo / error.
 
-### 4. Sesion en vivo (pantalla estrella)
+### 4. Seleccion de modo y sesion en vivo (pantalla estrella)
 
-Layout (tema oscuro, elementos grandes, legible a 2 metros):
+La app abre con tres tarjetas: **Equilibrado** (predeterminado), **Excentrico**
+y **Concentrico**. Tocar una tarjeta la selecciona; «Comenzar» abre la sesion
+y X vuelve al selector. El modo se mantiene al pasar al siguiente set.
+El simulador sigue siendo la fuente de datos mientras no haya dispositivo BLE.
+
+Layout de la sesion (tema oscuro, elementos grandes, legible a 2 metros):
 
 - Arriba: X (salir), **timer** del set.
 - Fila de datos: **set actual** | **REPS** (numero gigante) | **kg**
@@ -54,9 +59,13 @@ Layout (tema oscuro, elementos grandes, legible a 2 metros):
   tempo por separado queda pendiente.
 - Abajo: grafica de distancia (vista tecnica, colapsable) y botones:
   "Terminar set" / "Pausa".
-- Modalidad (elegida antes de iniciar): **Normal / Excentrico /
-  Concentrico**. En modos con tempo objetivo, la onda muestra la fase
-  actual y la app indica "mas lento" / "mas rapido" por color o texto.
+- Modalidad (elegida antes de iniciar): **Equilibrado / Excentrico /
+  Concentrico**. El carril usa tiempos fijos de subida/bajada de distancia:
+  1,5/1,5 s, 1/3 s y 3/1 s, respectivamente. Por ahora la app no conoce
+  la orientacion fisica del sensor ni que fase biomecanica corresponde a
+  cada direccion; antes de usar estos nombres como guia real, sera
+  necesario configurar el perfil de la maquina. El feedback "mas lento"
+  / "mas rapido" queda pendiente.
 - Entre sets: al pulsar "Terminar set" se congelan pelota, contador,
   carril y reloj del set; las nuevas mediciones no se procesan durante
   el descanso. "Siguiente set" reinicia el conteo y el reloj sin repetir

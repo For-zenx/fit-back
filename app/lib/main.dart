@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'ui/session_screen.dart';
+import 'ui/mode_selection_screen.dart';
 
 void main() {
   runApp(const FitBackApp());
@@ -23,7 +23,7 @@ class FitBackApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const SessionScreen(),
+      home: const ModeSelectionScreen(),
     );
   }
 }

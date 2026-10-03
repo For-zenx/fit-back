@@ -13,8 +13,9 @@ import 'motion_wave.dart';
 /// motion wave fed by a [DistanceSource] (simulator for now).
 class SessionScreen extends StatefulWidget {
   final DistanceSource? source;
+  final WorkoutMode mode;
 
-  const SessionScreen({super.key, this.source});
+  const SessionScreen({super.key, this.source, this.mode = WorkoutMode.normal});
 
   @override
   State<SessionScreen> createState() => _SessionScreenState();
@@ -125,6 +126,7 @@ class _SessionScreenState extends State<SessionScreen>
         _guide = GuideTrack.fromCalibration(
           minCm: _detector.minCm,
           maxCm: _detector.maxCm,
+          mode: widget.mode,
         );
         _motionAnchorCm = _currentCm;
         _lastMotionTick = 0;
@@ -212,7 +214,7 @@ class _SessionScreenState extends State<SessionScreen>
                 children: [
                   IconButton(
                     icon: const Icon(Icons.close, size: 32),
-                    onPressed: () {},
+                    onPressed: () => Navigator.maybePop(context),
                   ),
                   const Spacer(),
                   Text(
@@ -227,6 +229,11 @@ class _SessionScreenState extends State<SessionScreen>
                 ],
               ),
             ),
+            Text(switch (widget.mode) {
+              WorkoutMode.normal => 'Equilibrado',
+              WorkoutMode.eccentric => 'Excéntrico',
+              WorkoutMode.concentric => 'Concéntrico',
+            }, style: const TextStyle(color: Colors.white70, fontSize: 14)),
 
             // Set | REPS | kg
             Padding(
